@@ -1,11 +1,14 @@
 #version 460
 
+uniform mat4 v_mat;
+uniform mat4 p_mat;
 layout (location=0) in vec3 position;
-out vec4 varyingColor;
+layout (location=1) in vec2 texture_coord;
+out vec2 tc;
 
 void main()
 {
-	gl_Position = vec4(position, 1.0);
-	varyingColor = vec4(position, 1.0) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
+	gl_Position = p_mat * v_mat * (vec4(position, 1.0));
+	tc = texture_coord;
 }
 
