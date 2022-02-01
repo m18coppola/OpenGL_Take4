@@ -7,8 +7,11 @@
 
 #include "CoppLoader.h"
 
-#define LOOK_SENS 0.01
+#define LOOK_SENS 0.005
 #define CAM_SPEED 0.5
+
+#define WIDTH 1920
+#define HEIGHT 1080
 
 typedef struct {
 	vec3 position;
@@ -51,7 +54,7 @@ main(int argc, char *argv[])
         SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
 	/* create window */
-	SDL_Window *window = SDL_CreateWindow("CoppEng", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 720, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+	SDL_Window *window = SDL_CreateWindow("CoppEng", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to create window. Exiting.\nSDL_Error: %s\n", SDL_GetError());
 		SDL_Quit();
@@ -261,7 +264,7 @@ main(int argc, char *argv[])
 		);
 		/* render */
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000);
 		/* swap buffers */
 		SDL_GL_SwapWindow(window);
 	}
