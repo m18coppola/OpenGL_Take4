@@ -35,10 +35,12 @@ createViewMatrix(Camera c, mat4 vmat)
 int
 main(int argc, char *argv[])
 {
+	Model *model = readOBJ("pyr.obj");
+
 	GLenum glewError;
 	GLuint program;
 	GLuint vao[1];
-	GLuint vbo[2];
+	GLuint vbo[3];
 	SDL_Event e;
 	int running;
 
@@ -117,52 +119,24 @@ main(int argc, char *argv[])
 	glUniformMatrix4fv(glGetUniformLocation(program, "v_mat"),
 			1, GL_FALSE, (GLfloat *)v_mat);
 	
-	/* load data into vram */
-	float verts[108] = {
-		-1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
-	};
-
-	float texture_map[] = {
-		0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-		0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-		0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-		0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-		0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-		0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
-		0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-	};
-
 	/* VAO represents a complete rendered object */
 	glGenVertexArrays(1, vao);
 	glBindVertexArray(vao[0]);
 	/* VBO is a allocation of graphics memory */
-	glGenBuffers(2, vbo);
+	glGenBuffers(3, vbo);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(texture_map), texture_map, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->tcs_size, model->tcs, GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->verts_size, model->verts, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->vi_size * sizeof(GL_UNSIGNED_INT), model->v_index, GL_STATIC_DRAW);
 
 	/* set current texture (outside renderer, doesn't change for now) */
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
@@ -227,12 +201,6 @@ main(int argc, char *argv[])
 				}
 			}
 		}
-		/* rotate cube */
-		for (int i = 0; i < 108; i+= 3) {
-			glm_vec3_rotate(&verts[i], 0.01f, (vec3){0.0, 1.0, 0.0});
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(verts), verts);
 		/* rotate player */
 		int mousex, mousey;
 		SDL_GetRelativeMouseState(&mousex, &mousey);
@@ -264,7 +232,7 @@ main(int argc, char *argv[])
 		);
 		/* render */
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000);
+		glDrawElementsInstanced(GL_TRIANGLES, model->vi_size, GL_UNSIGNED_INT, (void *)0, 1);
 		/* swap buffers */
 		SDL_GL_SwapWindow(window);
 	}
