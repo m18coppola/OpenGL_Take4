@@ -14,21 +14,7 @@ mat4 buildTranslate(float x, float y, float z);
 
 void main()
 {
-
-	float i = gl_InstanceID + tf;
-	float a = sin(203.0 * i/8000.0) * 403.0;
-	float b = cos(301.0 * i/4001.0) * 401.0;
-	float c = sin(400.0 * i/6003.0) * 405.0;
-
-	mat4 localRotX = buildRotateX(1.75*i);
-	mat4 localRotY = buildRotateY(1.75*i);
-	mat4 localRotZ = buildRotateZ(1.75*i);
-	mat4 localTranslate = buildTranslate(a,b,c);
-
-	mat4 m_mat = localTranslate * localRotX * localRotY * localRotZ;
-	mat4 mv_mat = v_mat * m_mat;
-
-	gl_Position = p_mat * mv_mat * (vec4(position, 1.0));
+	gl_Position = p_mat * v_mat * (vec4(position, 1.0));
 	tc = texture_coord;
 }
 

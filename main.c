@@ -264,7 +264,8 @@ main(int argc, char *argv[])
 		);
 		/* render */
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 100000);
+		//glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 1);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		/* swap buffers */
 		SDL_GL_SwapWindow(window);
 	}
