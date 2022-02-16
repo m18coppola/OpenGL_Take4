@@ -6,16 +6,19 @@ uniform float tf;
 layout (location=0) in vec3 position;
 layout (location=1) in vec2 texture_coord;
 out vec2 tc;
+out vec4 varyingColor;
 
 mat4 buildRotateX(float rad);
 mat4 buildRotateY(float rad);
 mat4 buildRotateZ(float rad);
 mat4 buildTranslate(float x, float y, float z);
+layout (binding=0) uniform sampler2D s;
 
 void main()
 {
 	gl_Position = p_mat * v_mat * (vec4(position, 1.0));
 	tc = texture_coord;
+	varyingColor = vec4(position, 1.0) * 0.5 + vec4(0.5, 0.5, 0.5, 0.5);
 }
 
 mat4 buildTranslate(float x, float y, float z)

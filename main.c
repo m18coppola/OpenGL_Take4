@@ -7,8 +7,8 @@
 
 #include "CoppLoader.h"
 
-#define LOOK_SENS 0.005
-#define CAM_SPEED 0.5
+#define LOOK_SENS 0.003
+#define CAM_SPEED 0.2
 
 #define WIDTH 1920
 #define HEIGHT 1080
@@ -21,6 +21,8 @@ typedef struct {
 	int backward;
 	int left;
 	int right;
+	int up;
+	int down;
 } Camera;
 
 void
@@ -35,7 +37,7 @@ createViewMatrix(Camera c, mat4 vmat)
 int
 main(int argc, char *argv[])
 {
-	Model *model = readOBJ("pyr.obj");
+	Model *model = readOBJ("monke.obj");
 
 	GLenum glewError;
 	GLuint program;
@@ -91,7 +93,7 @@ main(int argc, char *argv[])
 	glUseProgram(program);
 
 	/* load crate texture */
-	GLuint texture_id = SOIL_load_OGL_texture("crate.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+	GLuint texture_id = SOIL_load_OGL_texture("spstob_1.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
 	if (texture_id == 0) {
 		fprintf(stderr, "SOIL2 failed to load crate.jpg as OGL texture. Exiting.\n");
 		exit(-1);
@@ -99,13 +101,15 @@ main(int argc, char *argv[])
 
 	/* setup camera */
 	Camera cam = (Camera){
-		.position = {0.0f, 2.0f, 8.0f},
+		.position = {0.0f, 0.0f, 8.0f},
 		.pitch = 0.0f,
 		.yaw = 0.0f,
 		.forward = 0,
 		.backward = 0,
 		.left = 0,
-		.right = 0
+		.right = 0,
+		.up = 0,
+		.down = 0
 	};
 
 	/* create a perspective projection matrix */
@@ -183,6 +187,12 @@ main(int argc, char *argv[])
 					case SDLK_s:
 						cam.backward = 1;
 						break;
+					case SDLK_SPACE:
+						cam.up = 1;
+						break;
+					case SDLK_c:
+						cam.down = 1;
+						break;
 				}
 			} else if (e.type == SDL_KEYUP) {
 				switch(e.key.keysym.sym){
@@ -197,6 +207,12 @@ main(int argc, char *argv[])
 						break;
 					case SDLK_s:
 						cam.backward = 0;
+						break;
+					case SDLK_SPACE:
+						cam.up = 0;
+						break;
+					case SDLK_c:
+						cam.down = 0;
 						break;
 				}
 			}
@@ -220,6 +236,12 @@ main(int argc, char *argv[])
 		if (cam.right) {
 			velocity[0] += CAM_SPEED;
 		}
+		if (cam.up) {
+			velocity[1] += CAM_SPEED;
+		}
+		if (cam.down) {
+			velocity[1] += -CAM_SPEED;
+		}
 		glm_vec3_rotate(velocity, cam.yaw, GLM_YUP);
 		glm_vec3_add(cam.position, velocity, cam.position);
 		/* update view matrix */
@@ -233,7 +255,7 @@ main(int argc, char *argv[])
 		/* render */
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 1);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, model->verts_size);
 		/* swap buffers */
 		SDL_GL_SwapWindow(window);
 	}
