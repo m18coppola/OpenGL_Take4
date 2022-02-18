@@ -37,7 +37,6 @@ createViewMatrix(Camera c, mat4 vmat)
 int
 main(int argc, char *argv[])
 {
-	Model *model = readOBJ("monke.obj");
 
 	GLenum glewError;
 	GLuint program;
@@ -85,19 +84,23 @@ main(int argc, char *argv[])
 		exit(-1);
 	}
 
+
+	/* load resources */
+	Model *model = readOBJ("dolphinHighPoly.obj");
+	GLuint texture_id = SOIL_load_OGL_texture("Dolphin_HighPolyUV.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+	if (texture_id == 0) {
+		fprintf(stderr, "SOIL2 failed to load image as OGL texture. Exiting.\n");
+		exit(-1);
+	}
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+
 	/* set clear color of renderer */
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	/* attach shader to GPU */
 	program = InitShader("vshader.glsl", "fshader.glsl");
 	glUseProgram(program);
-
-	/* load crate texture */
-	GLuint texture_id = SOIL_load_OGL_texture("spstob_1.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
-	if (texture_id == 0) {
-		fprintf(stderr, "SOIL2 failed to load crate.jpg as OGL texture. Exiting.\n");
-		exit(-1);
-	}
 
 	/* setup camera */
 	Camera cam = (Camera){
@@ -129,36 +132,23 @@ main(int argc, char *argv[])
 	/* VBO is a allocation of graphics memory */
 	glGenBuffers(3, vbo);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->tcs_size, model->tcs, GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
-
+	/* vertex position data */
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->verts_size, model->verts, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->verts_size, model->verts, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->vi_size * sizeof(GL_UNSIGNED_INT), model->v_index, GL_STATIC_DRAW);
-
-	/* set current texture (outside renderer, doesn't change for now) */
+	/* vertex normal data */
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->normals_size, model->normals, GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
 
-	/* enable and generate mipmaps */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	/* use anisotropic filtering if supported */
-	if (glewIsSupported("GL_EXT_texture_filter_anisotropic")) {
-		GLfloat aniso_setting = 0.0f;
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso_setting);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso_setting);
-	} else {
-		printf("AF not supported!\n");
-	}
+	/* texture cordinates */
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model->tcs_size, model->tcs, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(2);
 
 	/* enable depth testing */
 	glEnable(GL_DEPTH_TEST);
@@ -254,7 +244,7 @@ main(int argc, char *argv[])
 		);
 		/* render */
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 1);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 		glDrawArrays(GL_TRIANGLES, 0, model->verts_size);
 		/* swap buffers */
 		SDL_GL_SwapWindow(window);
