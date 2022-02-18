@@ -92,8 +92,23 @@ main(int argc, char *argv[])
 		fprintf(stderr, "SOIL2 failed to load image as OGL texture. Exiting.\n");
 		exit(-1);
 	}
+	/* bind texture to GPU */
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
+
+	/* enable and generate mipmaps */
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	/* use anisotropic filtering if supported */
+	if (glewIsSupported("GL_EXT_texture_filter_anisotropic")) {
+		GLfloat aniso_setting = 0.0f;
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso_setting);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, aniso_setting);
+	} else {
+		printf("AF not supported!\n");
+	}
+
 
 	/* set clear color of renderer */
 	glClearColor(1.0, 1.0, 1.0, 1.0);
