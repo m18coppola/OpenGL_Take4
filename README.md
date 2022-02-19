@@ -1,0 +1,3 @@
+# OpenGL_Take4
+
+This is some scratch work I've made as I taught myself the basics of OpenGL. Although far from a finished project, It has served its purpose as a way for me to learn the basics of graphics programming. Now to figure out how to implement an entity component system...
