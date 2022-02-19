@@ -86,8 +86,8 @@ main(int argc, char *argv[])
 
 
 	/* load resources */
-	Model *model = readOBJ("dolphinHighPoly.obj");
-	GLuint texture_id = SOIL_load_OGL_texture("Dolphin_HighPolyUV.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+	Model *model = readOBJ("shuttle.obj");
+	GLuint texture_id = SOIL_load_OGL_texture("spstob_1.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
 	if (texture_id == 0) {
 		fprintf(stderr, "SOIL2 failed to load image as OGL texture. Exiting.\n");
 		exit(-1);

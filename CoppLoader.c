@@ -155,9 +155,11 @@ readOBJ(char *OBJpath)
 		model->normals[nii + 2] = norm_vecs[n_index[i]-1][2];
 		nii+=3;
 
-		model->tcs[tii] = tcs_vecs[t_index[i]-1][0];
-		model->tcs[tii + 1] = tcs_vecs[t_index[i]-1][1];
-		tii+=2;
+		if (ti != 0) {
+			model->tcs[tii] = tcs_vecs[t_index[i]-1][0];
+			model->tcs[tii + 1] = tcs_vecs[t_index[i]-1][1];
+			tii+=2;
+		}
 	}
 	return model;
 
